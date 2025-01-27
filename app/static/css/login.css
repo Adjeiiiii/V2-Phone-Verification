@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #002147;
+    overflow: hidden;
+}
+
+.wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    width: 400px;
+    height: 450px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0px 8px 32px rgba(0, 33, 71, 0.37);
+}
+
+h2 {
+    font-size: 2em;
+    color: #FFFFFF; 
+    text-align: center;
+} 
+
+.input-box {
+    position: relative;
+    width: 320px;
+    margin: 30px 0;
+    border-bottom: 2px solid #FFFFFF;
+}
+
+.input-box label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    font-size: 1em;
+    pointer-events: none;
+    color: #FFFFFF;
+    transition: 0.5s;
+}
+
+.input-box input:focus~label,
+.input-box input:valid~label {
+    top: 5px;
+}
+
+.input-box input {
+    width: 100%;
+    height: 50px;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #FFFFFF; 
+    font-size: 1em;
+    padding: 0px 40px 0px 5px;
+}
+
+.input-box .icon {
+    position: absolute;
+    right: 8px;
+    color: #FFFFFF;
+    font-size: 1.2em;
+    line-height: 57px;
+}
+
+.remember-forgot {
+    color: #FFFFFF;
+    margin: -15px 0px 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+.remember-forgot a {
+    color: #B31B1B;
+    text-decoration: none;
+}
+
+.remember-forgot a:hover {
+    text-decoration: underline;
+}
+
+.remember-forgot label input {
+    accent-color: #B31B1B;
+    margin-right: 3px;
+}
+
+button {
+    width: 100%;
+    height: 45px;
+    border: none;
+    margin: none;
+    border-radius: 40px;
+    background: #B31B1B;
+    cursor: pointer;
+    font-size: 1em;
+    color: #FFFFFF; 
+    font-weight: 500;
+}
+
+.register-link {
+    font-size: 0.9em;
+    text-align: center;
+    color: #FFFFFF;
+    margin: 25px 0px 10px;
+}
+
+.register-link p a {
+    color: #B31B1B; 
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link p a:hover {
+    text-decoration: underline;
+}
+
+.message-footer {
+    color: #FFFFFF;
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 0.9em;
+    width: 100%;
+    position: fixed;
+    font-style: italic;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+
+.error-message {
+    color: red;
+    display: block;       
+    margin-bottom: 40px; 
+    margin-top: none;
+    font-weight: 500px;
+}
