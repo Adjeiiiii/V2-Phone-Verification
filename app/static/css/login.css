@@ -142,11 +142,20 @@ button {
     z-index: 1000;
 }
 
-
 .error-message {
     color: red;
     display: block;       
     margin-bottom: 40px; 
     margin-top: none;
     font-weight: 500px;
+}
+
+.kudos-footer {
+    background-color: #002855;
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }

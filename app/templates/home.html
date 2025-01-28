@@ -6,15 +6,21 @@
   <link rel="stylesheet" href="../static/css/home.css" />
   <title>Home</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 </head>
 <body>
 
+  <!-- Nav Bar -->
   <div class="navbar">
+    <!-- Left side links -->
     <div class="nav-left">
       <a href="#verified-list" class="nav-link">Verified List</a>
       <a href="#verify-users" class="nav-link">Verify Users</a>
     </div>
+
+    <!-- Right side with search, notifications, user icon -->
     <div class="nav-right">
       <div class="search-bar">
         <input type="text" placeholder="Search..." />
@@ -23,12 +29,21 @@
       <div class="notification-bell">
         <i class="fas fa-bell"></i>
       </div>
-      <div class="user-icon">
+
+      <!-- User icon container -->
+      <div class="user-icon" onclick="toggleUserDropdown()">
         <i class="fas fa-user-circle"></i>
+      </div>
+
+      <!-- Dropdown with "Logout" link -->
+      <div id="userDropdown" class="dropdown-menu">
+        <!-- Instead of confirm(), we open a custom modal -->
+        <a href="#" onclick="openLogoutModal(event)">Logout</a>
       </div>
     </div>
   </div>
 
+  <!-- Main content -->
   <div class="home-wrapper">
     <h1>Howard University Research - Phone Number Verification Platform</h1>
     <div class="home-container">
@@ -41,10 +56,26 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <div class="kudos-footer">
     <footer>
       <p>This site is only accessible to Howard University Research Department</p>
     </footer>
   </div>
+
+  <!-- ======= LOGOUT MODAL ======= -->
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-buttons">
+        <button id="confirmLogoutBtn">Yes</button>
+        <button id="cancelLogoutBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to home.js for dropdown & custom logout modal logic -->
+  <script src="../static/js/home.js"></script>
 </body>
 </html>

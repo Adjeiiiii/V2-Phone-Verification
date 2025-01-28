@@ -1,0 +1,28 @@
+# ----------------------
+# Python / Flask ignores
+# ----------------------
+*.pyc
+__pycache__/
+instance/
+.cache/
+.vscode/
+
+# If you use Python-specific IDEs:
+*.swp
+
+# ----------------------
+# ENV + Secrets
+# ----------------------
+.env
+*.env
+
+# ----------------------
+# Virtual Environment
+# ----------------------
+venv/
+env/
+.idea/
+
+# If you use Mac or Windows:
+.DS_Store
+Thumbs.db
