@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload-result.css') }}" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-left">
+      <a href="/home" class="nav-link">Home</a>
+      <a href="/verify" class="nav-link">Verify Menu</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-bar">
+        <input type="text" placeholder="Search..." id="searchInput" />
+        <i class="fas fa-search search-icon" id="searchIcon"></i>
+      </div>
+      <div class="notification-bell">
+        <i class="fas fa-bell"></i>
+      </div>
+      <div class="user-icon" id="profileIcon" onclick="toggleUserDropdown()">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div id="userDropdown" class="dropdown-menu">
+        <a href="#" onclick="openLogoutModal(event)">Logout</a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="results-wrapper">
+    <h1>Upload Results</h1>
+
+    {% if results.error %}
+      <div class="error-box">
+        <h2>Error</h2>
+        <p>{{ results.error }}</p>
+      </div>
+    {% else %}
+
+      {% set valid_count = 0 %}
+      {% set invalid_count = 0 %}
+      {% set duplicate_count = 0 %}
+      {% for row in results.row_results %}
+        {% if row.status|lower == "valid" %}
+          {% set valid_count = valid_count + 1 %}
+        {% elif row.status|lower == "invalid" %}
+          {% set invalid_count = invalid_count + 1 %}
+        {% elif row.status|lower == "duplicate" %}
+          {% set duplicate_count = duplicate_count + 1 %}
+        {% endif %}
+      {% endfor %}
+
+
+      <div class="upload-summary">
+        <p>
+          <strong>Valid:</strong> <span id="validCountSpan">{{ valid_count }}</span>
+          &nbsp;|&nbsp;
+          <strong>Invalid:</strong> <span id="invalidCountSpan">{{ invalid_count }}</span>
+          &nbsp;|&nbsp;
+          <strong>Duplicate:</strong> <span id="duplicateCountSpan">{{ duplicate_count }}</span>
+        </p>
+      </div>
+
+
+      <div class="bulk-actions">
+        <button id="bulkReverifyBtn" class="bulk-action-btn reverify-bulk">Re-verify Selected</button>
+        <button id="bulkSendOtpBtn" class="bulk-action-btn send-otp-bulk">Send OTP Selected</button>
+        <button id="bulkDeleteBtn" class="bulk-action-btn delete-bulk">Delete Selected</button>
+      </div>
+
+      <div class="table-container">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <!-- 'Select All' checkbox in the header -->
+              <th><input type="checkbox" id="selectAllCheckbox" /></th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>
+                Status
+                <span class="status-filter-trigger" onclick="toggleStatusDropdown(event)">
+                  <i class="fas fa-filter"></i>
+                </span>
+                <div id="statusDropdown" class="status-dropdown">
+                  <div class="status-option" data-value="all">All</div>
+                  <div class="status-option" data-value="valid">valid</div>
+                  <div class="status-option" data-value="invalid">invalid</div>
+                  <div class="status-option" data-value="duplicate">duplicate</div>
+                </div>
+              </th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in results.row_results %}
+              <tr 
+                data-id="{{ row.id }}"
+                data-status="{{ row.status|lower }}"
+              >
+                <td><input type="checkbox" class="row-checkbox"></td>
+                <td>{{ row.firstName }}</td>
+                <td>{{ row.lastName }}</td>
+                <td>{{ row.email }}</td>
+                <td>{{ row.phoneNumber }}</td>
+                <td>{{ row.status|lower }}</td>
+                <td>
+                  {% if row.createdAt %}
+                    {{ row.createdAt }}
+                  {% endif %}
+                </td>
+                <td>
+                  <button class="action-btn reverify-btn" type="button">Re-verify</button>
+                  <button class="action-btn send-otp-btn" type="button">Send OTP</button>
+                  <button class="action-btn delete-btn" type="button">Delete</button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="upload-again">
+        <a href="/upload-verify" class="btn-upload-again">Upload Another CSV</a>
+      </div>
+    {% endif %}
+  </div>
+
+
+  <div class="kudos-footer">
+    <footer>
+      <p>This site is only accessible to Howard University Research Department</p>
+    </footer>
+  </div>
+
+
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-buttons">
+        <button id="confirmLogoutBtn">Yes</button>
+        <button id="cancelLogoutBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="reverifyModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Re-Verify Number</h2>
+      <p>Are you sure you want to re-verify this phone number?</p>
+      <div class="modal-buttons">
+        <button id="confirmReverifyBtn">Yes</button>
+        <button id="cancelReverifyBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="sendOtpModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Send OTP</h2>
+      <p>Are you sure you want to send an OTP to this phone number?</p>
+      <div class="modal-buttons">
+        <button id="confirmSendOtpBtn">Yes</button>
+        <button id="cancelSendOtpBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+ 
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Delete Record</h2>
+      <p>Are you sure you want to delete this record?</p>
+      <div class="modal-buttons">
+        <button id="confirmDeleteBtn">Yes</button>
+        <button id="cancelDeleteBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="bulkModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Bulk Action Confirmation</h2>
+      <p id="bulkModalMessage"></p>
+      <div class="modal-buttons">
+        <button id="confirmBulkBtn">Yes</button>
+        <button id="cancelBulkBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/upload-result.js') }}"></script>
+</body>
+</html>

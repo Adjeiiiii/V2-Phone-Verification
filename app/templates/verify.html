@@ -2,29 +2,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-  <title>Home</title>
-
+  <meta charset="UTF-8">
+  <title>Verify Phone Numbers</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}">
 
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-
   <div class="navbar">
-
+ 
     <div class="nav-left">
-      <a href="./verified-phones" class="nav-link">Verified List</a>
-      <a href="./verify" class="nav-link">Verify Users</a>
+      <a href="/home" class="nav-link">Home</a>
+      <a href="/verified-phones" class="nav-link">Verified List</a>
     </div>
 
 
     <div class="nav-right">
       <div class="search-bar">
-        <input type="text" placeholder="Search..." />
+        <input type="text" placeholder="Search...">
         <i class="fas fa-search search-icon"></i>
       </div>
       <div class="notification-bell">
@@ -36,36 +34,35 @@
         <i class="fas fa-user-circle"></i>
       </div>
 
-  
+
       <div id="userDropdown" class="dropdown-menu">
         <a href="#" onclick="openLogoutModal(event)">Logout</a>
       </div>
     </div>
   </div>
 
+ 
+  <div class="verify-wrapper">
+    <h1>Verify Phone Numbers</h1>
+    <div class="verify-container">
 
-  <div class="home-wrapper">
-    <h1>Howard University Research - Phone Number Verification Platform</h1>
-    <div class="home-container">
-
-      <a href="/verify" class="card">
-        <h2>Verify Phone Numbers</h2>
+      <a href="/single-verify" class="card">
+        <h2>Single Verify</h2>
       </a>
-
-      <a href="/verified-phones" class="card">
-        <h2>View Verified Phone Numbers</h2>
+      <a href="/upload-verify" class="card">
+        <h2>Upload CSV</h2>
       </a>
     </div>
   </div>
 
-
+ 
   <div class="kudos-footer">
     <footer>
       <p>This site is only accessible to Howard University Research Department</p>
     </footer>
   </div>
 
- 
+
   <div id="logoutModal" class="modal-overlay">
     <div class="modal-content">
       <h2>Logout Confirmation</h2>
@@ -78,6 +75,6 @@
   </div>
 
 
-  <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/verify.js') }}"></script>
 </body>
 </html>

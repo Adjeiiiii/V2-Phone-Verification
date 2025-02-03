@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload CSV for Bulk Verification</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/upload-verify.css') }}">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="navbar">
+
+    <div class="nav-left">
+      <a href="/home" class="nav-link">Home</a>
+      <a href="/verify" class="nav-link">Verify Menu</a>
+      <a href="/verified-phones" class="nav-link">Verified List</a>
+    </div>
+
+
+    <div class="nav-right">
+      <div class="search-bar">
+        <input type="text" placeholder="Search..." />
+        <i class="fas fa-search search-icon"></i>
+      </div>
+      <div class="notification-bell">
+        <i class="fas fa-bell"></i>
+      </div>
+
+      <div class="user-icon" id="profileIcon" onclick="toggleUserDropdown()">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div id="userDropdown" class="dropdown-menu">
+        <a href="#" onclick="openLogoutModal(event)">Logout</a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="upload-page-wrapper">
+
+    <h1>Upload CSV for Bulk Verification</h1>
+
+
+    <div class="card instructions-box">
+      <h2>CSV Format Instructions</h2>
+      <p>Please upload a CSV file with <strong>four columns</strong> in this order:</p>
+      <ol>
+        <li><code>first_name</code></li>
+        <li><code>last_name</code></li>
+        <li><code>email</code></li>
+        <li><code>phone_number</code></li>
+      </ol>
+      <p>Example:</p>
+      <div class="csv-example">
+<pre>
+first_name,last_name,email,phone_number
+John,Doe,john@example.com,+12025551234
+Jane,Smith,jane@example.com,+12025554321
+</pre>
+      </div>
+      <p>Make sure your phone numbers include country code if needed (e.g., <code>+1</code> for US).</p>
+    </div>
+
+ 
+    <div class="card upload-container">
+
+      <form action="/upload-csv" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="csvFile" class="form-label">Select CSV file:</label>
+
+          <div class="file-input-wrapper">
+            <input type="file" id="csvFile" name="file" accept=".csv" required />
+          </div>
+        </div>
+        <button type="submit" class="upload-btn">Upload</button>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="kudos-footer">
+    <footer>
+      <p>This site is only accessible to Howard University Research Department</p>
+    </footer>
+  </div>
+
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-buttons">
+        <button id="confirmLogoutBtn">Yes</button>
+        <button id="cancelLogoutBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/upload-verify.js') }}"></script>
+</body>
+</html>

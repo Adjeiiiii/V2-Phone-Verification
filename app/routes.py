@@ -1,26 +1,24 @@
 import os
 import csv
-import secrets
 from io import TextIOWrapper
 from functools import wraps
 
-from flask import Blueprint, request, jsonify, session, redirect, render_template
+from flask import Blueprint, request, jsonify, session, redirect, render_template, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
 from twilio.rest import Client
 
-# Import the shared db and models
+# Import your database and models
 from .models import db, User, VerifiedDetail
 
-# Create a Blueprint instead of a new Flask app
+# Create Blueprint
 main_bp = Blueprint("main_bp", __name__)
 
 # --------------------------------
 #        ENV + CONFIG
 # --------------------------------
 load_dotenv()
-
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_USER = os.getenv("DB_USER", "isaac")
 DB_PASS = os.getenv("DB_PASS", "Isaac123")
@@ -29,7 +27,6 @@ SIGNUP_KEY = os.getenv("SIGNUP_KEY", "HowardResearch2025")
 
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-
 
 # --------------------------------
 #     LOGIN REQUIRED DECORATOR
@@ -42,6 +39,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --------------------------------
+#  ADD NO-CACHE HEADERS
+# --------------------------------
+@main_bp.after_request
+def add_no_cache_headers(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 # --------------------------------
 #             ROUTES
@@ -50,41 +56,34 @@ def login_required(f):
 def root_route():
     return redirect("/login")
 
-
 # ------------------ SIGNUP (PUBLIC) -------------------
 @main_bp.route("/signup", methods=["GET", "POST"])
 def signup():
-    # If already logged in, bounce to /home
     if session.get("logged_in"):
         return redirect("/home")
 
     if request.method == "GET":
         return render_template("signup.html")
 
-    # Handle POST (JSON fetch)
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    # Grab fields
     provided_key = data.get("signup_key")
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
 
-    # Basic validation
     if not name or not email or not password:
         return jsonify({"error": "Name, email, and password are required"}), 400
 
-    if provided_key != "HowardResearch2025":
+    if provided_key != SIGNUP_KEY:
         return jsonify({"error": "Invalid signup key"}), 403
 
-    # Check if user already exists
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({"error": "User with this email already exists"}), 400
 
-    # Create user
     hashed_pw = generate_password_hash(password)
     new_user = User(name=name, email=email, password_hash=hashed_pw)
     db.session.add(new_user)
@@ -92,19 +91,15 @@ def signup():
 
     return jsonify({"message": "User created successfully"}), 201
 
-
-
 # ------------------ LOGIN (PUBLIC) -------------------
 @main_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # If already logged in, bounce to /home
     if session.get("logged_in"):
         return redirect("/home")
 
     if request.method == "GET":
         return render_template("login.html")
 
-    # Handle POST (JSON or form)
     data = request.json if request.is_json else request.form
     if not data:
         return jsonify({"error": "No login data provided"}), 400
@@ -123,14 +118,12 @@ def login():
     session["user_id"] = user.id
     return redirect("/home")
 
-
-# ------------------ LOGOUT (PROTECTED) -------------------
+# ------------------ LOGOUT -------------------
 @main_bp.route("/logout")
 @login_required
 def logout():
     session.clear()
     return redirect("/login")
-
 
 # ------------------ PROTECTED PAGES -------------------
 @main_bp.route("/home")
@@ -153,13 +146,22 @@ def verified_phone_page():
 def single_verify_page():
     return render_template("single-verify.html")
 
+# ------------------ CSV UPLOAD (PAGE) -------------------
 @main_bp.route("/upload-verify")
 @login_required
 def upload_verify_page():
     return render_template("upload-verify.html")
 
+# ------------------ CSV RESULTS (PAGE) -------------------
+@main_bp.route("/upload-result")
+@login_required
+def upload_result_page():
+    results = session.get("upload_results")
+    if not results:
+        return redirect("/upload-verify")
+    return render_template("upload-result.html", results=results)
 
-# ------------------ LIST VERIFIED (PROTECTED) -------------------
+# ------------------ LIST VERIFIED -------------------
 @main_bp.route("/verified-list", methods=["GET"])
 @login_required
 def get_verified_list():
@@ -177,8 +179,7 @@ def get_verified_list():
         })
     return jsonify(results), 200
 
-
-# ------------------ DELETE VERIFIED (PROTECTED) -------------------
+# ------------------ DELETE VERIFIED -------------------
 @main_bp.route("/delete-verified/<int:record_id>", methods=["DELETE"])
 @login_required
 def delete_verified(record_id):
@@ -190,8 +191,7 @@ def delete_verified(record_id):
     db.session.commit()
     return jsonify({"message": "Record deleted successfully"}), 200
 
-
-# ------------------ VERIFY PHONE (PROTECTED) -------------------
+# ------------------ VERIFY PHONE (Single) -------------------
 @main_bp.route("/verify-phone", methods=["POST"])
 @login_required
 def verify_phone():
@@ -255,17 +255,7 @@ def verify_phone():
                 status="valid"
             )
             db.session.add(new_verified)
-            try:
-                db.session.commit()
-            except IntegrityError as ie:
-                db.session.rollback()
-                if "Duplicate entry" in str(ie.orig):
-                    return jsonify({
-                        "alreadyExists": True,
-                        "error": "This phone number is already in the database."
-                    }), 400
-                else:
-                    return jsonify({"error": "Database Integrity Error"}), 400
+            db.session.commit()
 
             return jsonify({
                 "alreadyExists": False,
@@ -275,8 +265,8 @@ def verify_phone():
                 "line_type": line_info.get("type"),
                 "carrier_name": carrier_name
             }), 200
+
         else:
-            # Store as invalid
             new_verified = VerifiedDetail(
                 first_name=first_name,
                 last_name=last_name,
@@ -285,13 +275,7 @@ def verify_phone():
                 status="invalid"
             )
             db.session.add(new_verified)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-                # Possibly skip or handle duplicates differently
-                pass
-
+            db.session.commit()
             return jsonify({
                 "alreadyExists": False,
                 "valid": False,
@@ -308,8 +292,7 @@ def verify_phone():
             "validation_errors": str(e)
         }), 400
 
-
-# ------------------ CHECK DUPLICATE (PROTECTED) -------------------
+# ------------------ CHECK DUPLICATE -------------------
 @main_bp.route("/check-duplicate", methods=["POST"])
 @login_required
 def check_duplicate():
@@ -340,10 +323,7 @@ def check_duplicate():
                 "status": existing.status
             }), 200
         else:
-            return jsonify({
-                "isDuplicate": False,
-                "message": "No duplicate found."
-            }), 200
+            return jsonify({"isDuplicate": False, "message": "No duplicate found."}), 200
 
     except Exception as e:
         return jsonify({
@@ -351,32 +331,37 @@ def check_duplicate():
             "message": f"Error checking duplicate: {str(e)}"
         }), 400
 
-
 # ------------------ BULK CSV UPLOAD (PROTECTED) -------------------
 @main_bp.route("/upload-csv", methods=["POST"])
 @login_required
 def upload_csv():
     if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+        session["upload_results"] = {"error": "No file uploaded"}
+        return redirect(url_for("main_bp.upload_result_page"))
 
     file = request.files["file"]
     if file.filename == "":
-        return jsonify({"error": "Uploaded file has no name"}), 400
+        session["upload_results"] = {"error": "Uploaded file has no name"}
+        return redirect(url_for("main_bp.upload_result_page"))
 
     try:
         stream = TextIOWrapper(file, encoding="utf-8")
         reader = csv.reader(stream)
     except Exception as e:
-        return jsonify({"error": f"Error reading file: {str(e)}"}), 400
+        session["upload_results"] = {"error": f"Error reading file: {str(e)}"}
+        return redirect(url_for("main_bp.upload_result_page"))
 
     header = next(reader, None)
     if not header:
-        return jsonify({"error": "CSV file is empty or corrupted."}), 400
+        session["upload_results"] = {"error": "CSV file is empty or corrupted."}
+        return redirect(url_for("main_bp.upload_result_page"))
 
     if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
-        return jsonify({"error": "Twilio credentials not set"}), 500
+        session["upload_results"] = {"error": "Twilio credentials not set"}
+        return redirect(url_for("main_bp.upload_result_page"))
 
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
     success_count = 0
     fail_count = 0
     row_results = []
@@ -386,11 +371,12 @@ def upload_csv():
             fail_count += 1
             row_results.append({
                 "rowIndex": i,
+                "id": None,
                 "firstName": "",
                 "lastName": "",
                 "email": "",
                 "phoneNumber": "",
-                "status": "INVALID",
+                "status": "invalid",
                 "reasons": ["Not enough columns"]
             })
             continue
@@ -398,11 +384,12 @@ def upload_csv():
         first_name, last_name, email, input_phone = [col.strip() for col in row]
         row_info = {
             "rowIndex": i,
+            "id": None,  # <--- We'll fill this after DB insert
             "firstName": first_name,
             "lastName": last_name,
             "email": email,
             "phoneNumber": input_phone,
-            "status": "INVALID",
+            "status": "invalid",
             "reasons": []
         }
 
@@ -422,7 +409,8 @@ def upload_csv():
             existing = VerifiedDetail.query.filter_by(phone_number=e164_phone).first()
             if existing:
                 fail_count += 1
-                row_info["status"] = "DUPLICATE"
+                row_info["id"] = existing.id  # store existing DB ID
+                row_info["status"] = "duplicate"
                 row_info["reasons"].append("Number already in database")
                 row_results.append(row_info)
                 continue
@@ -441,11 +429,11 @@ def upload_csv():
                 invalid_reasons.append("Carrier name unknown.")
 
             if invalid_reasons:
+                # Mark as invalid in DB
                 fail_count += 1
-                row_info["status"] = "INVALID"
+                row_info["status"] = "invalid"
                 row_info["reasons"] = invalid_reasons
 
-                # store as "invalid"
                 new_verified = VerifiedDetail(
                     first_name=first_name,
                     last_name=last_name,
@@ -456,10 +444,11 @@ def upload_csv():
                 db.session.add(new_verified)
                 db.session.commit()
 
+                row_info["id"] = new_verified.id  # store new DB ID
                 row_results.append(row_info)
                 continue
 
-            # If it passes all checks, mark valid
+            # If passes checks, mark as valid
             new_verified = VerifiedDetail(
                 first_name=first_name,
                 last_name=last_name,
@@ -471,24 +460,26 @@ def upload_csv():
             db.session.commit()
 
             success_count += 1
-            row_info["status"] = "VALID"
-            row_info["reasons"] = []
+            row_info["id"] = new_verified.id  # store new DB ID
+            row_info["status"] = "valid"
+            row_results.append(row_info)
 
         except Exception as exc:
             fail_count += 1
-            row_info["status"] = "INVALID"
+            row_info["status"] = "invalid"
             row_info["reasons"].append(f"Twilio/Exception: {str(exc)}")
+            row_results.append(row_info)
 
-        row_results.append(row_info)
-
-    return jsonify({
+    # Store final results
+    session["upload_results"] = {
+        "error": None,
         "success_count": success_count,
         "fail_count": fail_count,
         "row_results": row_results
-    }), 200
+    }
+    return redirect(url_for("main_bp.upload_result_page"))
 
-
-# ------------------ REVALIDATE (PROTECTED) -------------------
+# ------------------ REVALIDATE -------------------
 @main_bp.route("/revalidate/<int:record_id>", methods=["POST"])
 @login_required
 def revalidate_number(record_id):
@@ -521,7 +512,6 @@ def revalidate_number(record_id):
             is_valid = False
             reasons.append("Carrier name unknown.")
 
-        # Update the record
         record.status = "valid" if is_valid else "invalid"
         db.session.commit()
 

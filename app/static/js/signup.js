@@ -5,11 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     signupForm.addEventListener("submit", async (event) => {
       event.preventDefault();
   
-      // Hide old error message
       signupError.style.display = "none";
       signupError.innerText = "";
   
-      // Gather values
       const name = document.getElementById("name").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -28,17 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
   
         if (!response.ok) {
-          // parse error
           const data = await response.json();
           signupError.style.display = "block";
           signupError.innerText = data.error || "Signup error.";
         } else {
-          // success
           const data = await response.json();
           signupError.style.display = "block";
           signupError.style.color = "green";
           signupError.innerText = data.message || "User created successfully!";
-          // optionally redirect
           setTimeout(() => {
             window.location.href = "/login";
           }, 1500);

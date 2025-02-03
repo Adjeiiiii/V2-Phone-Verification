@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verified Phones</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/verified-phones.css') }}">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="navbar">
+
+    <div class="nav-left">
+      <a href="/home" class="nav-link">Home</a>
+      <a href="/verify" class="nav-link">Verify Menu</a>
+    </div>
+
+
+    <div class="nav-right">
+      <div class="search-bar">
+        <input type="text" placeholder="Search..." id="searchInput">
+        <i class="fas fa-search search-icon" id="searchIcon"></i>
+      </div>
+      <div class="notification-bell">
+        <i class="fas fa-bell"></i>
+      </div>
+
+
+      <div class="user-icon" id="profileIcon" onclick="toggleUserDropdown()">
+        <i class="fas fa-user-circle"></i>
+      </div>
+
+
+      <div id="userDropdown" class="dropdown-menu">
+        <a href="#" onclick="openLogoutModal(event)">Logout</a>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="verified-phones-wrapper">
+    <h1>Verified Phone Numbers</h1>
+    
+
+    <div class="bulk-actions">
+      <button id="bulkReverifyBtn" class="bulk-action-btn reverify-bulk">Re-verify Selected</button>
+      <button id="bulkSendOtpBtn" class="bulk-action-btn send-otp-bulk">Send OTP Selected</button>
+      <button id="bulkDeleteBtn" class="bulk-action-btn delete-bulk">Delete Selected</button>
+    </div>
+
+    <div class="table-container">
+      <table id="verifiedTable">
+        <thead>
+          <tr>
+
+            <th>
+              <input type="checkbox" id="selectAllCheckbox" />
+            </th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+
+            <th>
+              Status
+              <span class="status-filter-trigger" onclick="toggleStatusDropdown(event)">
+                <i class="fas fa-filter"></i>
+              </span>
+              <div id="statusDropdown" class="status-dropdown">
+                <div class="status-option" data-value="all">All</div>
+                <div class="status-option" data-value="valid">Valid</div>
+                <div class="status-option" data-value="invalid">Invalid</div>
+                <div class="status-option" data-value="pending">Pending</div>
+              </div>
+            </th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div class="kudos-footer">
+    <footer>
+      <p>This site is only accessible to Howard University Research Department</p>
+    </footer>
+  </div>
+
+
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-buttons">
+        <button id="confirmLogoutBtn">Yes</button>
+        <button id="cancelLogoutBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="reverifyModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Re-Verify Number</h2>
+      <p>Are you sure you want to re-verify this phone number?</p>
+      <div class="modal-buttons">
+        <button id="confirmReverifyBtn">Yes</button>
+        <button id="cancelReverifyBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Delete Record</h2>
+      <p>Are you sure you want to delete this record?</p>
+      <div class="modal-buttons">
+        <button id="confirmDeleteBtn">Yes</button>
+        <button id="cancelDeleteBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="sendOtpModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Send OTP</h2>
+      <p>Are you sure you want to send an OTP to this phone number?</p>
+      <div class="modal-buttons">
+        <button id="confirmSendOtpBtn">Yes</button>
+        <button id="cancelSendOtpBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="bulkModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Bulk Action Confirmation</h2>
+      <p id="bulkModalMessage">Are you sure you want to do X for Y records?</p>
+      <div class="modal-buttons">
+        <button id="confirmBulkBtn">Yes</button>
+        <button id="cancelBulkBtn">No</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="{{ url_for('static', filename='js/verified-phones.js') }}"></script>
+</body>
+</html>

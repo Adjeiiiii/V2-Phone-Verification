@@ -145,8 +145,8 @@ button {
 .error-message {
     color: red;
     display: block;       
-    margin-bottom: 40px; 
-    margin-top: none;
+    margin-bottom: none; 
+    margin-top: 20px;
     font-weight: 500px;
 }
 
